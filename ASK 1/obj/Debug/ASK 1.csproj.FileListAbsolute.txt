@@ -1,0 +1,10 @@
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\bin\Debug\ASK 1.exe.config
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\bin\Debug\ASK 1.exe
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\bin\Debug\ASK 1.pdb
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\obj\Debug\ASK 1.csprojAssemblyReference.cache
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\obj\Debug\ASK_1.Form1.resources
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\obj\Debug\ASK_1.Properties.Resources.resources
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\obj\Debug\ASK 1.csproj.GenerateResource.cache
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\obj\Debug\ASK 1.csproj.CoreCompileInputs.cache
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\obj\Debug\ASK 1.exe
+D:\Downloads\PG\Sem 6\ASK\ASK 1\ASK 1\obj\Debug\ASK 1.pdb
