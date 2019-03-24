@@ -13,9 +13,95 @@ namespace ASK_1
 {
     public partial class Form1 : Form
     {
+        private Register regAX;
+        private Register regBX;
+        private Register regCX;
+        private Register regDX;
+
         public Form1()
         {
             InitializeComponent();
+            initializeRegisters();
+        }
+
+        private void initializeRegisters() {
+            this.regAX = new Register("AX");
+            this.regBX = new Register("BX");
+            this.regCX = new Register("CX");
+            this.regDX = new Register("DX");
+            this.label4.Text = regAX.getValue();
+            this.label11.Text = regBX.getValue();
+            this.label6.Text = regCX.getValue();
+            this.label9.Text = regDX.getValue();
+        }
+
+        private void makeOperation(String operation, Register regDest, String sourceVal) {
+            switch (operation) {
+                case "MOV": {
+                        regDest.writeInto(sourceVal);
+                        break;
+                    }
+                case "ADD": {
+
+                        break;
+                    }
+                case "SUB": {
+
+                        break;
+                    }
+                default:
+                    break;
+            }
+
+        }
+
+        private Register chooseDestinationRegister(String regName) {
+            switch (regName) {
+                case "AX":
+                    return regAX;
+                case "BX":
+                    return regBX;
+                case "CX":
+                    return regCX;
+                case "DX":
+                    return regDX;
+                default:
+                    return null;
+            }
+        }
+
+        private String getSourceValue(String regName) {
+            switch (regName) {
+                case "AX":
+                    return regAX.getValue();
+                case "BX":
+                    return regBX.getValue();
+                case "CX":
+                    return regCX.getValue();
+                case "DX":
+                    return regDX.getValue();
+                default:
+                    return regName;
+            }
+        }
+
+        private void updateRegisterLabel(Register reg) {
+            switch (reg.getName()) {
+                case "AX":
+                    this.label4.Text = reg.getValue();
+                    break;
+                case "BX":
+                    this.label11.Text = reg.getValue();
+                    break;
+                case "CX":
+                    this.label6.Text = reg.getValue();
+                    break;
+                case "DX":
+                    this.label9.Text = reg.getValue();
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void otwórzToolStripMenuItem_Click(object sender, EventArgs e)
@@ -28,7 +114,7 @@ namespace ASK_1
                     // Read the stream to a string, and write the string to the console.
                     String line = sr.ReadToEnd();
                     //this.label1.Text = line;
-                    this.textBox1.Text = line; ;
+                    this.textBox1.Text = line;
                 }
             }
             catch (IOException ne)
@@ -62,6 +148,27 @@ namespace ASK_1
 
             // wypisanie w labelu 3 wyniku jako string dopełniony z lewj zerami
             this.label3.Text = Convert.ToString(number_one + number_two, 2).PadLeft(8, '0'); 
+        }
+
+        private void button2_Click(object sender, EventArgs e) {
+            String command;
+            String firstArg;
+            String secondArg;
+            for (int i = 0; i < textBox1.Lines.Length; i++) {
+                String[] line = textBox1.Lines[i].Split(' ');
+                command = line[0];
+                String[] args = line[1].Split(',');
+                firstArg = args[0];
+                secondArg = args[1];
+                makeOperation(command, chooseDestinationRegister(firstArg), getSourceValue(secondArg));
+                updateRegisterLabel(chooseDestinationRegister(firstArg));
+                //MessageBox.Show("WARTOSC W REJESTRZE " + chooseDestinationRegister(firstArg).getName() + " " + chooseDestinationRegister(firstArg).getValue());
+            }
+
+        }
+
+        private void pomocToolStripMenuItem_Click(object sender, EventArgs e) {
+            MessageBox.Show("KOMENDY: MOV, ADD, SUB. Przykład: MOV AX,1234");
         }
     }
 }
