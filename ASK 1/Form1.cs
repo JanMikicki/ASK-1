@@ -41,12 +41,18 @@ namespace ASK_1
                         regDest.writeInto(sourceVal);
                         break;
                     }
-                case "ADD": {
-
+                case "ADD": {                      
+                        int a = Convert.ToInt32(regDest.getValue(), 2); //na razie zakłada że podajemy l. binarną
+                        int b = Convert.ToInt32(sourceVal, 2);
+                        String c = Convert.ToString(a + b, 2).PadLeft(4, '0');
+                        regDest.writeInto(c);
                         break;
                     }
                 case "SUB": {
-
+                        int a = Convert.ToInt32(regDest.getValue(), 2);
+                        int b = Convert.ToInt32(sourceVal, 2);
+                        String c = Convert.ToString(a - b, 2).PadLeft(4, '0');
+                        regDest.writeInto(c);                       
                         break;
                     }
                 default:
@@ -155,14 +161,18 @@ namespace ASK_1
             String firstArg;
             String secondArg;
             for (int i = 0; i < textBox1.Lines.Length; i++) {
-                String[] line = textBox1.Lines[i].Split(' ');
-                command = line[0];
-                String[] args = line[1].Split(',');
-                firstArg = args[0];
-                secondArg = args[1];
-                makeOperation(command, chooseDestinationRegister(firstArg), getSourceValue(secondArg));
-                updateRegisterLabel(chooseDestinationRegister(firstArg));
-                //MessageBox.Show("WARTOSC W REJESTRZE " + chooseDestinationRegister(firstArg).getName() + " " + chooseDestinationRegister(firstArg).getValue());
+                String line = textBox1.Lines[i];
+                if (!String.IsNullOrEmpty(line)) //sprawdzenie czy linia nie pusta
+                {
+                    command = line.Substring(0, 3).ToUpper();                           //pierwsze 3 znaki to rozkaz
+                    String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');   //dzieli argumenty przecinkiem
+                    firstArg = args[0].Trim().ToUpper();                                //usunięcie spacjii, konwersja ToUpper
+                    secondArg = args[1].Trim().ToUpper();
+
+                    makeOperation(command, chooseDestinationRegister(firstArg), getSourceValue(secondArg));
+                    updateRegisterLabel(chooseDestinationRegister(firstArg));
+                }
+                
             }
 
         }
