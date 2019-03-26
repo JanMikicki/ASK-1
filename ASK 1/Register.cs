@@ -9,18 +9,18 @@ namespace ASK_1 {
 
         private String name;
 
-        private String H;
-        private String L;
-        private String HL;
+        private int H;
+        private int L;
+        private int HL;
 
         public Register(String name) {
             this.name = name;
-            this.H = "00";
-            this.L = "00";
+            this.H = 0;
+            this.L = 0;
             this.HL = this.H + this.L;
         }
 
-        public String getValue() {
+        public int getValue() {
             return this.HL;
         }
 
@@ -28,10 +28,15 @@ namespace ASK_1 {
             return this.name;
         }
 
-        public void writeInto(String value) {
-            this.H = value.Substring(0, 2);
-            this.L = value.Substring(2);
-            this.HL = this.H + this.L;
+        public void writeInto(int value) {
+            //this.H = value;
+            //this.L = value;
+            if (value >= 0 && value <=65536) {
+                this.HL = value;
+            } else {
+                this.HL = 0;
+            }
+            
         }
     }
 }

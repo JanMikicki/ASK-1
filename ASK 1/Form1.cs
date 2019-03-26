@@ -18,6 +18,8 @@ namespace ASK_1
         private Register regCX;
         private Register regDX;
 
+        private int view = 10; // 10 - base10, 2 - base2, 16 - base16
+
         public Form1()
         {
             InitializeComponent();
@@ -29,29 +31,29 @@ namespace ASK_1
             this.regBX = new Register("BX");
             this.regCX = new Register("CX");
             this.regDX = new Register("DX");
-            this.label4.Text = regAX.getValue();
-            this.label11.Text = regBX.getValue();
-            this.label6.Text = regCX.getValue();
-            this.label9.Text = regDX.getValue();
+            this.label4.Text = Convert.ToString(regAX.getValue());
+            this.label11.Text = Convert.ToString(regBX.getValue());
+            this.label6.Text = Convert.ToString(regCX.getValue());
+            this.label9.Text = Convert.ToString(regDX.getValue());
         }
 
-        private void makeOperation(String operation, Register regDest, String sourceVal) {
+        private void makeOperation(String operation, Register regDest, int sourceVal) {
             switch (operation) {
                 case "MOV": {
                         regDest.writeInto(sourceVal);
                         break;
                     }
-                case "ADD": {                      
-                        int a = Convert.ToInt32(regDest.getValue(), 2); //na razie zakłada że podajemy l. binarną
-                        int b = Convert.ToInt32(sourceVal, 2);
-                        String c = Convert.ToString(a + b, 2).PadLeft(4, '0');
+                case "ADD": {
+                        int a = regDest.getValue();
+                        int b = sourceVal;                      
+                        int c = a + b;
                         regDest.writeInto(c);
                         break;
                     }
                 case "SUB": {
-                        int a = Convert.ToInt32(regDest.getValue(), 2);
-                        int b = Convert.ToInt32(sourceVal, 2);
-                        String c = Convert.ToString(a - b, 2).PadLeft(4, '0');
+                        int a = regDest.getValue();
+                        int b = sourceVal;
+                        int c = a - b;
                         regDest.writeInto(c);                       
                         break;
                     }
@@ -76,7 +78,13 @@ namespace ASK_1
             }
         }
 
-        private String getSourceValue(String regName) {
+        private void processSourceValue(String value) {
+            String mode = value.Substring(value.Length);
+
+
+        }
+
+        private int getSourceValue(String regName) {
             switch (regName) {
                 case "AX":
                     return regAX.getValue();
@@ -87,23 +95,29 @@ namespace ASK_1
                 case "DX":
                     return regDX.getValue();
                 default:
-                    return regName;
+                    if (regName[regName.Length - 1] == 'H') {
+                        regName = regName.Replace("H", "");
+                        return int.Parse(regName, System.Globalization.NumberStyles.HexNumber);
+                    }
+                    return Convert.ToInt32(regName);
             }
         }
 
-        private void updateRegisterLabel(Register reg) {
+        private void updateRegisterLabel(Register reg, int view) {
+            //String value = Convert.ToString(reg.getValue());
             switch (reg.getName()) {
                 case "AX":
-                    this.label4.Text = reg.getValue();
+                    //String tmp = Convert.ToString(Convert.ToInt32(value, view)); 
+                    this.label4.Text = Convert.ToString(reg.getValue(), view);
                     break;
                 case "BX":
-                    this.label11.Text = reg.getValue();
+                    this.label11.Text = Convert.ToString(reg.getValue(), view);
                     break;
                 case "CX":
-                    this.label6.Text = reg.getValue();
+                    this.label6.Text = Convert.ToString(reg.getValue(), view);
                     break;
                 case "DX":
-                    this.label9.Text = reg.getValue();
+                    this.label9.Text = Convert.ToString(reg.getValue(), view);
                     break;
                 default:
                     break;
@@ -170,15 +184,37 @@ namespace ASK_1
                     secondArg = args[1].Trim().ToUpper();
 
                     makeOperation(command, chooseDestinationRegister(firstArg), getSourceValue(secondArg));
-                    updateRegisterLabel(chooseDestinationRegister(firstArg));
-                }
-                
+                    updateRegisterLabel(chooseDestinationRegister(firstArg), view);
+                }   
             }
-
         }
 
         private void pomocToolStripMenuItem_Click(object sender, EventArgs e) {
-            MessageBox.Show("KOMENDY: MOV, ADD, SUB. Przykład: MOV AX,1234");
+            MessageBox.Show("KOMENDY: MOV, ADD, SUB.\n Przykład:\n Dziesietnie MOV AX,123 \n Hexadecymentalnie MOV AX,123h");
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e) {
+            view = 10;
+            updateRegisterLabel(regAX, view);
+            updateRegisterLabel(regBX, view);
+            updateRegisterLabel(regCX, view);
+            updateRegisterLabel(regDX, view);
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e) {
+            view = 2;
+            updateRegisterLabel(regAX, view);
+            updateRegisterLabel(regBX, view);
+            updateRegisterLabel(regCX, view);
+            updateRegisterLabel(regDX, view);
+        }
+
+        private void radioButton3_CheckedChanged(object sender, EventArgs e) {
+            view = 16;
+            updateRegisterLabel(regAX, view);
+            updateRegisterLabel(regBX, view);
+            updateRegisterLabel(regCX, view);
+            updateRegisterLabel(regDX, view);
         }
     }
 }
