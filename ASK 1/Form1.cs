@@ -37,24 +37,74 @@ namespace ASK_1
             this.label9.Text = Convert.ToString(regDX.getValue());
         }
 
-        private void makeOperation(String operation, Register regDest, int sourceVal) {
+        private void saveToReg(String regname, int sourceVal)
+        {
+            switch (regname.Substring(1))
+            {
+                case "X":
+                    {
+                        chooseDestinationRegister(regname).writeInto(sourceVal);
+                        break;
+                    }
+                case "H":
+                    {
+                        String dest = regname.Substring(0, 1) + "X";
+                        chooseDestinationRegister(dest).writeInto(sourceVal, "H");
+                        break;
+                    }
+                case "L":
+                    {
+                        String dest = regname.Substring(0, 1) + "X";
+                        chooseDestinationRegister(dest).writeInto(sourceVal, "L");
+                        break;
+                    }
+                default:
+                    break;
+            }
+        }
+
+        private int getFromReg(String regname)
+        {
+            switch (regname.Substring(1))
+            {
+                case "X":
+                    {
+                        return chooseDestinationRegister(regname).getValue();
+                    }
+                case "H":
+                    {
+                        String dest = regname.Substring(0, 1) + "X";
+                        return chooseDestinationRegister(dest).getValue("H");
+                    }
+                case "L":
+                    {
+                        String dest = regname.Substring(0, 1) + "X";
+                        return chooseDestinationRegister(dest).getValue("L");                       
+                    }
+                default:
+                    return -1;
+            }
+        }
+
+        private void makeOperation(String operation, String regname, int sourceVal) {
+            Register regDest = chooseDestinationRegister(regname);
             switch (operation) {
                 case "MOV": {
-                        regDest.writeInto(sourceVal);
+                        saveToReg(regname, sourceVal);
                         break;
                     }
                 case "ADD": {
-                        int a = regDest.getValue();
+                        int a = getFromReg(regname);
                         int b = sourceVal;                      
                         int c = a + b;
-                        regDest.writeInto(c);
+                        saveToReg(regname, c);
                         break;
                     }
                 case "SUB": {
-                        int a = regDest.getValue();
+                        int a = getFromReg(regname);
                         int b = sourceVal;
                         int c = a - b;
-                        regDest.writeInto(c);                       
+                        saveToReg(regname, c);
                         break;
                     }
                 default:
@@ -81,43 +131,54 @@ namespace ASK_1
         private void processSourceValue(String value) {
             String mode = value.Substring(value.Length);
 
-
         }
 
-        private int getSourceValue(String regName) {
-            switch (regName) {
-                case "AX":
-                    return regAX.getValue();
-                case "BX":
-                    return regBX.getValue();
-                case "CX":
-                    return regCX.getValue();
-                case "DX":
-                    return regDX.getValue();
+        private int getSourceValue(String arg) { //na razie nie mozna jeszcze podac jako drugiego argumentu sub-rejestru
+            switch (arg[0]) {
+                case 'A':
+                    return getFromReg(arg);
+                case 'B':
+                    return getFromReg(arg);
+                case 'C':
+                    return getFromReg(arg);
+                case 'D':
+                    return getFromReg(arg);
                 default:
-                    if (regName[regName.Length - 1] == 'H') {
-                        regName = regName.Replace("H", "");
-                        return int.Parse(regName, System.Globalization.NumberStyles.HexNumber);
+                    if (arg.Length > 1 && arg.Substring(0, 2) == "0X") {
+                        arg = arg.Replace("0X", "");
+                        return int.Parse(arg, System.Globalization.NumberStyles.HexNumber);
                     }
-                    return Convert.ToInt32(regName);
+                    else if (arg[arg.Length - 1] == 'H')
+                    {
+                        arg = arg.Replace("H", "");
+                        return int.Parse(arg, System.Globalization.NumberStyles.HexNumber);
+                    }
+                    else if (arg[arg.Length - 1] == 'B')
+                    {
+                        arg = arg.Replace("B", "");
+                        return Convert.ToInt32(arg, 2);
+                    }
+                    return Convert.ToInt32(arg);
             }
         }
 
-        private void updateRegisterLabel(Register reg, int view) {
+        private void updateRegisterLabel(String regname, int view) {
             //String value = Convert.ToString(reg.getValue());
-            switch (reg.getName()) {
-                case "AX":
-                    //String tmp = Convert.ToString(Convert.ToInt32(value, view)); 
-                    this.label4.Text = Convert.ToString(reg.getValue(), view);
+            switch (regname.Substring(0, 1)) {
+                case "A":
+                    if(view == 2)
+                        this.label4.Text = Convert.ToString(regAX.getValue(), view).PadLeft(16, '0');
+                    else
+                        this.label4.Text = Convert.ToString(regAX.getValue(), view);
                     break;
-                case "BX":
-                    this.label11.Text = Convert.ToString(reg.getValue(), view);
+                case "B":
+                    this.label11.Text = Convert.ToString(regBX.getValue(), view);
                     break;
-                case "CX":
-                    this.label6.Text = Convert.ToString(reg.getValue(), view);
+                case "C":
+                    this.label6.Text = Convert.ToString(regCX.getValue(), view);
                     break;
-                case "DX":
-                    this.label9.Text = Convert.ToString(reg.getValue(), view);
+                case "D":
+                    this.label9.Text = Convert.ToString(regDX.getValue(), view);
                     break;
                 default:
                     break;
@@ -160,16 +221,7 @@ namespace ASK_1
                     outputFile.WriteLine(line);
             }
         }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            int number_one = Convert.ToInt32(this.label1.Text, 2); //zamiana stringa na liczbę binarną
-            int number_two = Convert.ToInt32(this.label2.Text, 2); //też nie wiedziałem że się da
-
-            // wypisanie w labelu 3 wyniku jako string dopełniony z lewj zerami
-            this.label3.Text = Convert.ToString(number_one + number_two, 2).PadLeft(8, '0'); 
-        }
-
+        
         private void button2_Click(object sender, EventArgs e) {
             String command;
             String firstArg;
@@ -183,38 +235,41 @@ namespace ASK_1
                     firstArg = args[0].Trim().ToUpper();                                //usunięcie spacjii, konwersja ToUpper
                     secondArg = args[1].Trim().ToUpper();
 
-                    makeOperation(command, chooseDestinationRegister(firstArg), getSourceValue(secondArg));
-                    updateRegisterLabel(chooseDestinationRegister(firstArg), view);
+                    makeOperation(command, firstArg, getSourceValue(secondArg));
+                    updateRegisterLabel(firstArg, view);
                 }   
             }
         }
 
         private void pomocToolStripMenuItem_Click(object sender, EventArgs e) {
-            MessageBox.Show("KOMENDY: MOV, ADD, SUB.\n Przykład:\n Dziesietnie MOV AX,123 \n Hexadecymentalnie MOV AX,123h");
+            MessageBox.Show("KOMENDY: MOV, ADD, SUB.\n" +
+                            "Przykład:\nDziesietnie MOV AX, 123 \n" +
+                            "Hexadecymentalnie MOV AX, 0x123 lub MOV AX, 123h\n" +
+                            "Binarnie MOV AX, 10011b");
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e) {
             view = 10;
-            updateRegisterLabel(regAX, view);
-            updateRegisterLabel(regBX, view);
-            updateRegisterLabel(regCX, view);
-            updateRegisterLabel(regDX, view);
+            updateRegisterLabel("AX", view);
+            updateRegisterLabel("BX", view);
+            updateRegisterLabel("CX", view);
+            updateRegisterLabel("DX", view);
         }
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e) {
             view = 2;
-            updateRegisterLabel(regAX, view);
-            updateRegisterLabel(regBX, view);
-            updateRegisterLabel(regCX, view);
-            updateRegisterLabel(regDX, view);
+            updateRegisterLabel("AX", view);
+            updateRegisterLabel("BX", view);
+            updateRegisterLabel("CX", view);
+            updateRegisterLabel("DX", view);
         }
 
         private void radioButton3_CheckedChanged(object sender, EventArgs e) {
             view = 16;
-            updateRegisterLabel(regAX, view);
-            updateRegisterLabel(regBX, view);
-            updateRegisterLabel(regCX, view);
-            updateRegisterLabel(regDX, view);
+            updateRegisterLabel("AX", view);
+            updateRegisterLabel("BX", view);
+            updateRegisterLabel("CX", view);
+            updateRegisterLabel("DX", view);
         }
     }
 }
