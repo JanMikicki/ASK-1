@@ -19,6 +19,7 @@ namespace ASK_1
         private Register regDX;
 
         private int view = 10; // 10 - base10, 2 - base2, 16 - base16
+        private int line_nr = 0;
 
         public Form1()
         {
@@ -35,6 +36,17 @@ namespace ASK_1
             this.label11.Text = Convert.ToString(regBX.getValue());
             this.label6.Text = Convert.ToString(regCX.getValue());
             this.label9.Text = Convert.ToString(regDX.getValue());
+        }
+
+        private void resetRegisters() {
+            saveToReg("AX", 0);
+            saveToReg("BX", 0);
+            saveToReg("CX", 0);
+            saveToReg("DX", 0);
+            updateRegisterLabel("AX", view);
+            updateRegisterLabel("BX", view);
+            updateRegisterLabel("CX", view);
+            updateRegisterLabel("DX", view);
         }
 
         private void saveToReg(String regname, int sourceVal)
@@ -270,6 +282,40 @@ namespace ASK_1
             updateRegisterLabel("BX", view);
             updateRegisterLabel("CX", view);
             updateRegisterLabel("DX", view);
+        }
+
+        private void button1_Click(object sender, EventArgs e) {
+            String command;
+            String firstArg;
+            String secondArg;
+            String line = "";
+            try {
+                line = textBox1.Lines[line_nr];
+            } catch (IndexOutOfRangeException) {
+                this.label3.Text = "BRAK DALSZYCH LINII W KODZIE. KONIEC PRACY KROKOWEJ";
+                line_nr = -1;
+                resetRegisters();
+            }
+            
+            if (!String.IsNullOrEmpty(line)) 
+            {
+                command = line.Substring(0, 3).ToUpper();                          
+                String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');   
+                firstArg = args[0].Trim().ToUpper();                                
+                secondArg = args[1].Trim().ToUpper();
+
+                makeOperation(command, firstArg, getSourceValue(secondArg));
+                updateRegisterLabel(firstArg, view);
+                this.label3.Text = (line_nr + 1) + ". " + line;
+            }
+            line_nr++;
+            
+        }
+
+        private void button3_Click(object sender, EventArgs e) {
+            line_nr = 0;
+            this.label3.Text = "";
+            resetRegisters();
         }
     }
 }
