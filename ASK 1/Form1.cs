@@ -21,11 +21,13 @@ namespace ASK_1
         private int view = 10; // 10 - base10, 2 - base2, 16 - base16
         private int line_nr = 0;
 
+
         public Form1()
         {
             InitializeComponent();
             initializeRegisters();
         }
+
 
         private void initializeRegisters() {
             this.regAX = new Register("AX");
@@ -38,6 +40,7 @@ namespace ASK_1
             this.label9.Text = Convert.ToString(regDX.getValue());
         }
 
+
         private void resetRegisters() {
             saveToReg("AX", 0);
             saveToReg("BX", 0);
@@ -49,8 +52,10 @@ namespace ASK_1
             updateRegisterLabel("DX", view);
         }
 
+
         private void saveToReg(String regname, int sourceVal)
         {
+            if (regname.Length != 2) { MessageBox.Show("Niepoprawna składnia."); return; }
             switch (regname.Substring(1))
             {
                 case "X":
@@ -71,12 +76,15 @@ namespace ASK_1
                         break;
                     }
                 default:
+                    MessageBox.Show("Niepoprawna składnia.");
                     break;
             }
         }
 
+
         private int getFromReg(String regname)
         {
+            if (regname.Length != 2) { throw new ArgumentOutOfRangeException("Unknown value"); }
             switch (regname.Substring(1))
             {
                 case "X":
@@ -94,12 +102,12 @@ namespace ASK_1
                         return chooseDestinationRegister(dest).getValue("L");                       
                     }
                 default:
-                    return -1;
+                    throw new ArgumentOutOfRangeException("Unknown value");
             }
         }
 
-        private void makeOperation(String operation, String regname, int sourceVal) {
-            Register regDest = chooseDestinationRegister(regname);
+
+        private void makeOperation(String operation, String regname, int sourceVal) {           
             switch (operation) {
                 case "MOV": {
                         saveToReg(regname, sourceVal);
@@ -120,10 +128,12 @@ namespace ASK_1
                         break;
                     }
                 default:
+                    MessageBox.Show("Niepoprawna składnia.");
                     break;
             }
 
         }
+
 
         private Register chooseDestinationRegister(String regName) {
             switch (regName) {
@@ -140,12 +150,8 @@ namespace ASK_1
             }
         }
 
-        private void processSourceValue(String value) {
-            String mode = value.Substring(value.Length);
 
-        }
-
-        private int getSourceValue(String arg) { //na razie nie mozna jeszcze podac jako drugiego argumentu sub-rejestru
+        private int getSourceValue(String arg) { 
             switch (arg[0]) {
                 case 'A':
                     return getFromReg(arg);
@@ -159,12 +165,7 @@ namespace ASK_1
                     if (arg.Length > 1 && arg.Substring(0, 2) == "0X") {
                         arg = arg.Replace("0X", "");
                         return int.Parse(arg, System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (arg[arg.Length - 1] == 'H')
-                    {
-                        arg = arg.Replace("H", "");
-                        return int.Parse(arg, System.Globalization.NumberStyles.HexNumber);
-                    }
+                    }                    
                     else if (arg[arg.Length - 1] == 'B')
                     {
                         arg = arg.Replace("B", "");
@@ -174,8 +175,8 @@ namespace ASK_1
             }
         }
 
-        private void updateRegisterLabel(String regname, int view) {
-            //String value = Convert.ToString(reg.getValue());
+
+        private void updateRegisterLabel(String regname, int view) {          
             switch (regname.Substring(0, 1)) {
                 case "A":
                     if(view == 2)
@@ -184,29 +185,37 @@ namespace ASK_1
                         this.label4.Text = Convert.ToString(regAX.getValue(), view);
                     break;
                 case "B":
-                    this.label11.Text = Convert.ToString(regBX.getValue(), view);
+                    if (view == 2)
+                        this.label11.Text = Convert.ToString(regBX.getValue(), view).PadLeft(16, '0');
+                    else
+                        this.label11.Text = Convert.ToString(regBX.getValue(), view);
                     break;
                 case "C":
-                    this.label6.Text = Convert.ToString(regCX.getValue(), view);
+                    if (view == 2)
+                        this.label6.Text = Convert.ToString(regCX.getValue(), view).PadLeft(16, '0');
+                    else
+                        this.label6.Text = Convert.ToString(regCX.getValue(), view);
                     break;
                 case "D":
-                    this.label9.Text = Convert.ToString(regDX.getValue(), view);
+                    if (view == 2)
+                        this.label9.Text = Convert.ToString(regDX.getValue(), view).PadLeft(16, '0');
+                    else
+                        this.label9.Text = Convert.ToString(regDX.getValue(), view);
                     break;
                 default:
                     break;
             }
         }
 
+
         private void otwórzToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.openFileDialog1.ShowDialog();
             try
-            {   // Open the text file using a stream reader.
+            {   
                 using (StreamReader sr = new StreamReader(this.openFileDialog1.FileName))
-                {
-                    // Read the stream to a string, and write the string to the console.
-                    String line = sr.ReadToEnd();
-                    //this.label1.Text = line;
+                {                   
+                    String line = sr.ReadToEnd();                   
                     this.textBox1.Text = line;
                 }
             }
@@ -216,17 +225,16 @@ namespace ASK_1
             }
         }
 
+
         private void zapiszToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.saveFileDialog1.ShowDialog();
-            // Create a string array with the lines of text
+            
             string[] lines = this.textBox1.Lines;
-
-            // Set a variable to the Documents path.
+          
             string docPath =
               Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-            // Write the string array to a new file named "WriteLines.txt".
+            
             using (StreamWriter outputFile = new StreamWriter(this.saveFileDialog1.FileName))
             {
                 foreach (string line in lines)
@@ -234,6 +242,7 @@ namespace ASK_1
             }
         }
         
+
         private void button2_Click(object sender, EventArgs e) {
             String command;
             String firstArg;
@@ -242,23 +251,29 @@ namespace ASK_1
                 String line = textBox1.Lines[i];
                 if (!String.IsNullOrEmpty(line)) //sprawdzenie czy linia nie pusta
                 {
-                    command = line.Substring(0, 3).ToUpper();                           //pierwsze 3 znaki to rozkaz
-                    String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');   //dzieli argumenty przecinkiem
-                    firstArg = args[0].Trim().ToUpper();                                //usunięcie spacjii, konwersja ToUpper
-                    secondArg = args[1].Trim().ToUpper();
+                    try
+                    {
+                        command = line.Substring(0, 3).ToUpper();                           //pierwsze 3 znaki to rozkaz
+                        String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');   //dzieli argumenty przecinkiem
+                        firstArg = args[0].Trim().ToUpper();                                //usunięcie spacjii, konwersja ToUpper
+                        secondArg = args[1].Trim().ToUpper();
 
-                    makeOperation(command, firstArg, getSourceValue(secondArg));
-                    updateRegisterLabel(firstArg, view);
+                        makeOperation(command, firstArg, getSourceValue(secondArg));
+                        updateRegisterLabel(firstArg, view);
+                    }
+                    catch(Exception ex) { MessageBox.Show("Niepoprawna składnia."); }
                 }   
             }
         }
 
+
         private void pomocToolStripMenuItem_Click(object sender, EventArgs e) {
             MessageBox.Show("KOMENDY: MOV, ADD, SUB.\n" +
                             "Przykład:\nDziesietnie MOV AX, 123 \n" +
-                            "Hexadecymentalnie MOV AX, 0x123 lub MOV AX, 123h\n" +
+                            "Hexadecymentalnie MOV AX, 0x123 \n" +
                             "Binarnie MOV AX, 10011b");
         }
+
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e) {
             view = 10;
@@ -284,6 +299,7 @@ namespace ASK_1
             updateRegisterLabel("DX", view);
         }
 
+        // Praca krokowa
         private void button1_Click(object sender, EventArgs e) {
             String command;
             String firstArg;
@@ -299,14 +315,18 @@ namespace ASK_1
             
             if (!String.IsNullOrEmpty(line)) 
             {
-                command = line.Substring(0, 3).ToUpper();                          
-                String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');   
-                firstArg = args[0].Trim().ToUpper();                                
-                secondArg = args[1].Trim().ToUpper();
+                try
+                {
+                    command = line.Substring(0, 3).ToUpper();
+                    String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');
+                    firstArg = args[0].Trim().ToUpper();
+                    secondArg = args[1].Trim().ToUpper();
 
-                makeOperation(command, firstArg, getSourceValue(secondArg));
-                updateRegisterLabel(firstArg, view);
-                this.label3.Text = (line_nr + 1) + ". " + line;
+                    makeOperation(command, firstArg, getSourceValue(secondArg));
+                    updateRegisterLabel(firstArg, view);
+                    this.label3.Text = (line_nr + 1) + ". " + line;
+                }
+                catch(Exception ex) { MessageBox.Show("Niepoprawna składnia."); }
             }
             line_nr++;
             

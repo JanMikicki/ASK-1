@@ -20,8 +20,7 @@ namespace ASK_1 {
             this.HL = this.H + this.L;
         }
 
-        public int getValue() {
-            //this.HL = this.H + this.L;
+        public int getValue() {           
             return this.HL;
         }
 
@@ -38,7 +37,7 @@ namespace ASK_1 {
 
         public void writeInto(int value)
         {           
-            if (value >= 0 && value <=65536) {
+            if (value >= 0 && value <= 65535) {
                 this.HL = value;
 
                 String bin = Convert.ToString(value, 2).PadLeft(16, '0');
