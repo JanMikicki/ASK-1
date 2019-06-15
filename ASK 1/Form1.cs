@@ -296,7 +296,6 @@ namespace ASK_1
                             if (command == "POP") {
                                 String arg = line.Substring(line.IndexOf(' ') + 1);
                                 if (stosik.Count > 0) {
-                                    //String tmp = arg.Trim().ToUpper();
                                     makeOperation(command, arg.Trim().ToUpper());
                                     updateRegisterLabel(arg.Trim().ToUpper(), view);
                                 }
