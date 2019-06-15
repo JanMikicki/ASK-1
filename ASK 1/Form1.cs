@@ -21,6 +21,8 @@ namespace ASK_1
         private int view = 10; // 10 - base10, 2 - base2, 16 - base16
         private int line_nr = 0;
 
+        private Stack<int> stosik = new Stack<int>();
+
 
         public Form1()
         {
@@ -131,9 +133,36 @@ namespace ASK_1
                     MessageBox.Show("Niepoprawna składnia.");
                     break;
             }
+        }
+
+        private void makeOperation(String operation, int sourceVal) {
+            switch (operation) {
+                case "PUSH": {
+                        stosik.Push(sourceVal);
+                        break;
+                    }
+                default:
+                    MessageBox.Show("Niepoprawna składnia.");
+                    break;
+            }
 
         }
 
+        private void makeOperation(String operation, String regname) {
+            switch (operation) {
+                case "PUSH": {
+                        stosik.Push(getFromReg(regname));
+                        break;
+                    }
+                case "POP": {
+                        saveToReg(regname, stosik.Pop());
+                        break;
+                    }
+                default:
+                    MessageBox.Show("Niepoprawna składnia.");
+                    break;
+            }
+        }
 
         private Register chooseDestinationRegister(String regName) {
             switch (regName) {
@@ -253,13 +282,32 @@ namespace ASK_1
                 {
                     try
                     {
-                        command = line.Substring(0, 3).ToUpper();                           //pierwsze 3 znaki to rozkaz
-                        String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');   //dzieli argumenty przecinkiem
-                        firstArg = args[0].Trim().ToUpper();                                //usunięcie spacjii, konwersja ToUpper
-                        secondArg = args[1].Trim().ToUpper();
-
-                        makeOperation(command, firstArg, getSourceValue(secondArg));
-                        updateRegisterLabel(firstArg, view);
+                        if (line.Substring(0, 4).ToUpper() == "PUSH") {
+                            command = line.Substring(0, 4).ToUpper(); //pierwsze 4 znaki to rozkaz
+                            int tmp;
+                            String arg = line.Substring(line.IndexOf(' ') + 1);
+                            if (int.TryParse(arg, out tmp)) {
+                                makeOperation(command, tmp);
+                            } else {
+                                makeOperation(command, arg.Trim().ToUpper());
+                            }
+                        } else {
+                            command = line.Substring(0, 3).ToUpper(); //pierwsze 3 znaki to rozkaz
+                            if (command == "POP") {
+                                String arg = line.Substring(line.IndexOf(' ') + 1);
+                                if (stosik.Count > 0) {
+                                    //String tmp = arg.Trim().ToUpper();
+                                    makeOperation(command, arg.Trim().ToUpper());
+                                    updateRegisterLabel(arg.Trim().ToUpper(), view);
+                                }
+                            } else {
+                                String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');//dzieli argumenty przecinkiem
+                                firstArg = args[0].Trim().ToUpper();                                //usunięcie spacjii, konwersja ToUpper
+                                secondArg = args[1].Trim().ToUpper();
+                                makeOperation(command, firstArg, getSourceValue(secondArg));
+                                updateRegisterLabel(firstArg, view);
+                            }
+                        }               
                     }
                     catch(Exception ex) { MessageBox.Show("Niepoprawna składnia."); }
                 }   
