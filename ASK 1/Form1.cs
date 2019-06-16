@@ -23,7 +23,6 @@ namespace ASK_1
 
         private Stack<int> stosik = new Stack<int>();
 
-
         public Form1()
         {
             InitializeComponent();
@@ -291,7 +290,8 @@ namespace ASK_1
                             } else {
                                 makeOperation(command, arg.Trim().ToUpper());
                             }
-                        } else {
+                        }
+                        else {
                             command = line.Substring(0, 3).ToUpper(); //pierwsze 3 znaki to rozkaz
                             if (command == "POP") {
                                 String arg = line.Substring(line.IndexOf(' ') + 1);
@@ -299,7 +299,16 @@ namespace ASK_1
                                     makeOperation(command, arg.Trim().ToUpper());
                                     updateRegisterLabel(arg.Trim().ToUpper(), view);
                                 }
-                            } else {
+                            }
+                            else if(command == "INT"){
+                                String nr_przerwania = line.Substring(3, 2);
+                                interrupt(nr_przerwania);
+                                updateRegisterLabel("AX", view);
+                                updateRegisterLabel("BX", view);
+                                updateRegisterLabel("CX", view);
+                                updateRegisterLabel("DX", view);
+                            }
+                            else {
                                 String[] args = line.Substring(line.IndexOf(' ') + 1).Split(',');//dzieli argumenty przecinkiem
                                 firstArg = args[0].Trim().ToUpper();                                //usunięcie spacjii, konwersja ToUpper
                                 secondArg = args[1].Trim().ToUpper();
@@ -313,6 +322,76 @@ namespace ASK_1
             }
         }
 
+        private void interrupt(String nr_przerwania) {
+            switch (nr_przerwania)
+            {
+                case "1A":
+                    //wypisz do CX ile dni uplynelo od 1, 1, 1980
+                    if (regAX.getValue("H") == 16) { 
+                        DateTime centuryBegin = new DateTime(1980, 1, 1);
+                        DateTime currentDate = DateTime.Now;
+
+                        long elapsedTicks = currentDate.Ticks - centuryBegin.Ticks;
+                        TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
+
+                        String day_string = elapsedSpan.Days.ToString();
+
+                        int day_len = day_string.Length;
+                        regCX.writeInto(Int32.Parse( day_string) );
+                        }
+                    // wypisz do CH, CL, DH, DL wiek, rok, miesiac i dzien
+                    else if (regAX.getValue("H") == 4)
+                    {
+                        //nie dziala w 100% dobrze bo za male rejestry
+                        DateTime currentDate = DateTime.Now;
+                        regCX.writeInto(currentDate.Year / 100, "H"); //century
+                        regCX.writeInto(currentDate.Year, "L");       //year
+                        regDX.writeInto(currentDate.Month, "H");      //month
+                        regDX.writeInto(currentDate.Day, "L");        //day
+                    }
+                    break;
+
+                case "16":
+                    // wpisz do AL ascii znaku z bufora
+                    if (regAX.getValue("H") == 16)
+                    {
+                        char input = this.keyboard_Buffer.Text.First();
+                        regAX.writeInto((int)input, "L");                     
+                    }
+                    // wypisz do bufora znak, którego ascii jest w CL
+                    if (regAX.getValue("H") == 5)
+                    {
+                        char output = Convert.ToChar(regCX.getValue("L"));
+                        this.keyboard_Buffer.Text = Char.ToString(output);                      
+                    }
+                    break;
+
+                case "10":
+                    // ustaw pozycje kursora
+                    if (regAX.getValue("H") == 2)
+                    {
+                        int row = regDX.getValue("H") * 10;     // Y
+                        int column = regDX.getValue("L") * 10; // X
+
+                        this.Cursor = new Cursor(Cursor.Current.Handle);                       
+                        Cursor.Position = new Point(column, row);
+                    }
+                    // wpisz do DL X, a do DH Y kursora podzielone przez 10
+                    if (regAX.getValue("H") == 3)
+                    {
+                        this.Cursor = new Cursor(Cursor.Current.Handle);
+                        int row = Cursor.Position.Y / 10;
+                        int column = Cursor.Position.X / 10;
+
+                        regDX.writeInto(column, "L");
+                        regDX.writeInto(row, "H");
+                    }
+
+                    break;
+                default:
+                    break;
+            }
+        }
 
         private void pomocToolStripMenuItem_Click(object sender, EventArgs e) {
             MessageBox.Show("KOMENDY: MOV, ADD, SUB.\n" +
