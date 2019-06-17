@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.ComponentModel;
 
 namespace ASK_1
 {
@@ -22,6 +25,15 @@ namespace ASK_1
         private int line_nr = 0;
 
         private Stack<int> stosik = new Stack<int>();
+
+        [DllImport("winmm.dll", EntryPoint = "mciSendStringA")]
+        public static extern void mciSendStringA(string lpstrCommand,
+        string lpstrReturnString, long uReturnLength, long hwndCallback);
+
+        string rt = "";
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
+        public static extern short GetKeyState(int keyCode);
 
         public Form1()
         {
@@ -388,6 +400,32 @@ namespace ASK_1
                     }
 
                     break;
+
+                case "17":
+                    Console.Beep(5000, 1000);
+                    break;
+
+                case "18":
+                    try {
+                        mciSendStringA("set CDAudio door open", rt, 127, 0);
+                    } catch (Exception) {
+                        Console.WriteLine("BLAD");
+                    }
+                    
+                    break;
+
+                case "19":
+                    bool caps = Control.IsKeyLocked(Keys.CapsLock);
+                    regDX.writeInto(Convert.ToInt32(caps), "L");
+                    break;
+
+                case "20":
+                    var psi = new ProcessStartInfo("shutdown", "/s /t 0");
+                    psi.CreateNoWindow = true;
+                    psi.UseShellExecute = false;
+                    Process.Start(psi);
+                    break;
+
                 default:
                     break;
             }
